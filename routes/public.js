@@ -7,14 +7,13 @@ const router = express.Router()
 
 router.get('/', async (req, res) => {
     try {
-        const usuario = await prisma.usuario.findMany()
-        res.status(200).json({ message: "Usuários listados com sucesso!", usuario })
-
+        const usuarios = await prisma.usuario.findMany();
+        res.status(200).json({ message: "Usuários listados com sucesso!", usuarios });
     } catch (error) {
-        res.status(500).json({ message: "Erro no servidor!" })
+        console.error("Erro ao buscar usuários:", error);
+        res.status(500).json({ message: "Erro no servidor!", error: error.message });
     }
-
-})
+});
 
 router.post('/cadastro', async (req, res) => {
 

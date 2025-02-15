@@ -1,13 +1,18 @@
-import express from "express"
-import publicRoutes from './routes/public.js'
-import cors from 'cors'
+import express from "express";
+import publicRoutes from './routes/public.js';
+import cors from 'cors';
 
-const app = express()
+const app = express();
 
-app.use(cors())
-app.use(express.json())
-app.use('/', publicRoutes)
+// Usar CORS e JSON
+app.use(cors());
+app.use(express.json());
 
+// Definir as rotas
+app.use('/', publicRoutes);
 
-
-app.listen(3000, () => console.log("servidor rodando!"))
+// Iniciar o servidor
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
+});

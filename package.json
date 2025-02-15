@@ -1,12 +1,12 @@
 {
   "name": "sauloapi",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "server.js",
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "server.js",
-    "start": "node/server.js"
+    "build": "prisma generate && node server.js",
+    "start": "node server.js"
   },
   "keywords": [],
   "author": "",
