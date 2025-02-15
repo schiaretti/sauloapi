@@ -11,6 +11,7 @@ app.use(express.json());
 // Definir as rotas
 app.use('/', publicRoutes);
 
+
 // Iniciar o servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

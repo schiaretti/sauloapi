@@ -15,6 +15,7 @@ router.get('/', async (req, res) => {
     }
 });
 
+
 router.post('/cadastro', async (req, res) => {
 
     try {
