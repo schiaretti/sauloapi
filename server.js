@@ -5,11 +5,7 @@ import cors from 'cors';
 const app = express();
 
 // Usar CORS e JSON
-app.use(cors({
-  origin: ['http://localhost:5173', 'https://fretes-rho.vercel.app/'],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(cors());
 
 app.use(express.json());
 
