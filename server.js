@@ -5,15 +5,19 @@ import cors from 'cors';
 const app = express();
 
 // Usar CORS e JSON
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5173', 'https://fretes-rho.vercel.app/'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
 
 // Definir as rotas
 app.use('/', publicRoutes);
 
 
-// Iniciar o servidor
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+
+app.listen(3000, () => {
+  console.log('Servidor rodando');
 });
