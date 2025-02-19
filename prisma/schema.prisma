@@ -20,3 +20,24 @@ model Usuario {
   senha   String
  
 }
+
+model cliente{
+  id    String   @id @default(auto()) @map("_id") @db.ObjectId
+  email String @unique
+  nome  String    
+  cnpj  String
+  celular String 
+  contato   String
+}
+
+model logistica{
+   id    String   @id @default(auto()) @map("_id") @db.ObjectId
+   usuario     String
+   cliente     String
+   cidorigem   String
+   ciddestino   String
+   freteemp    String
+   fretemot    String
+   produto      String
+   veiculo      String
+}
