@@ -37,7 +37,7 @@ router.post('/cadastro', async (req, res) => {
         res.status(500).json({ message: "Erro no servidor tente novamente!" })
     }
 
-})
+})  
 
 
 export default router
