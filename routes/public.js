@@ -5,18 +5,10 @@ import bcrypt from 'bcrypt'
 const prisma = new PrismaClient()
 const router = express.Router()
 
-router.get('/', async (req, res) => {
-    try {
-        const usuarios = await prisma.usuario.findMany();
-        res.status(200).json({ message: "Usuários listados com sucesso!", usuarios });
-    } catch (error) {
-        console.error("Erro ao buscar usuários:", error);
-        res.status(500).json({ message: "Erro no servidor!", error: error.message });
-    }
-});
 
 
-router.post('/cadastro', async (req, res) => {
+
+router.post('/cadastro-usuario', async (req, res) => {
 
     try {
         const usuario = req.body
@@ -37,7 +29,22 @@ router.post('/cadastro', async (req, res) => {
         res.status(500).json({ message: "Erro no servidor tente novamente!" })
     }
 
-})   
+})
+
+router.get('/listar-usuarios', async (req, res) => {
+    try {
+        const usuario = await prisma.usuario.findMany(); // Mudando o nome da variável para um termo mais adequado
+
+        if (usuario.length === 0) {
+            return res.status(404).json({ message: "Nenhum usuário encontrado!" });
+        }
+
+        res.status(200).json({ message: "Usuários listados com sucesso!", usuario });
+    } catch (error) {
+        console.error("Erro ao buscar usuários:", error);
+        res.status(500).json({ message: "Erro no servidor!", error: error.message });
+    }
+});
 
 router.post('/login', async (req, res) => {
 
@@ -58,15 +65,94 @@ router.post('/login', async (req, res) => {
         }
 
         //gerar jwt
-        const token = jwt.sign({id: user.id}, JWT_SECRET,{expiresIn:'7d'})
+        // const token = jwt.sign({id: user.id}, JWT_SECRET,{expiresIn:'7d'})
 
 
-        res.status(200).json(token)
+        //res.status(200).json(token)
 
     } catch (error) {
         res.status(500).json({ message: "Erro no servidor!" })
     }
 })
 
+router.post('/cadastro-clientes', async (req, res) => {
+    try {
+        const { email, nome, cnpj, celular, contato } = req.body; // Pegando os dados do corpo da requisição
 
+        const cliente = await prisma.cliente.create({
+            data: {
+                email,
+                nome,
+                cnpj,
+                celular,
+                contato,
+            },
+        });
+
+       
+        res.status(201).json(cliente);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Erro no servidor, tente novamente!" });
+    }
+});
+
+
+router.post('/cadastro-fretes', async (req, res) => {
+    try {
+        const { usuario, cliente, cidorigem, ciddestino, freteemp, fretemot, produto, veiculo } = req.body; // Pegando os dados do corpo da requisição
+
+        const logistica = await prisma.logistica.create({
+            data: {
+                usuario,
+                cliente,
+                cidorigem,
+                ciddestino,
+                freteemp,
+                fretemot,
+                produto,
+                veiculo,
+            },
+        });
+
+        res.status(201).json(logistica);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Erro no servidor, tente novamente!" });
+    }
+});
+
+
+router.get('/listar-fretes', async (req, res) => {
+    try {
+        const fretes = await prisma.logistica.findMany(); // Mudando o nome da variável para um termo mais adequado
+
+        if (fretes.length === 0) {
+            return res.status(404).json({ message: "Nenhum frete encontrado!" });
+        }
+
+        res.status(200).json({ message: "Fretes listados com sucesso!", fretes });
+    } catch (error) {
+        console.error("Erro ao buscar fretes:", error);
+        res.status(500).json({ message: "Erro no servidor!", error: error.message });
+    }
+});
+
+router.delete('/logistica/:id', async (req,res) =>{
+    await prisma.logistica.delete({
+        where: {
+            id: req.params.id
+        }
+    })
+    res.status(200).json({message: "Frete deletado com sucesso!"})
+})
+
+router.delete('/usuario/:id', async (req,res) =>{
+    await prisma.usuario.delete({
+        where: {
+            id: req.params.id
+        }
+    })
+    res.status(200).json({message: "Usuário deletado com sucesso!"})
+})
 export default router
