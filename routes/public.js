@@ -47,33 +47,33 @@ router.get('/listar-usuarios', async (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
-
     try {
-        const usuarioInfo = req.body
+        const usuarioInfo = req.body;
 
-        //busca usuario no banco
-        const usuario = await prisma.usuario.findUnique({ where: { email: usuarioInfo.email } })
+        // Busca usuário no banco
+        const usuario = await prisma.usuario.findUnique({
+            where: { email: usuarioInfo.email }
+        });
 
-        //verifica se o usuario existe
+        // Verifica se o usuário existe
         if (!usuario) {
-            return res.status(404).json({ message: "Usuário não encontrado!" })
+            return res.status(404).json({ message: "Usuário não encontrado!" });
         }
-        //compara a senha no banco
-        const isMatch = await bcrypt.compare(usuarioInfo.password, usuario.password)
+
+        // Compara a senha no banco
+        const isMatch = await bcrypt.compare(usuarioInfo.senha, usuario.senha);
         if (!isMatch) {
-            return res.status(400).json({ message: "Senha inválida!" })
+            return res.status(400).json({ message: "Senha inválida!" });
         }
 
-        //gerar jwt
-        // const token = jwt.sign({id: user.id}, JWT_SECRET,{expiresIn:'7d'})
-
-
-        //res.status(200).json(token)
+        res.status(200).json({ message: "Login realizado com sucesso", usuario });
 
     } catch (error) {
-        res.status(500).json({ message: "Erro no servidor!" })
+        console.error("Erro ao tentar logar:", error);
+        res.status(500).json({ message: "Erro no servidor!" });
     }
-})
+});
+
 
 router.post('/cadastro-clientes', async (req, res) => {
     try {
