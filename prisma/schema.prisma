@@ -36,8 +36,10 @@ model logistica{
    cliente     String
    cidorigem   String
    ciddestino   String
-   freteemp    String
-   fretemot    String
-   produto      String
-   veiculo      String
+   tonsaida    String
+   tonchegada    String
+   motorista      String
+   placa      String
+   adiantamento String
+   saldo  String
 }

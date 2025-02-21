@@ -100,7 +100,8 @@ router.post('/cadastro-clientes', async (req, res) => {
 
 router.post('/cadastro-fretes', async (req, res) => {
     try {
-        const { usuario, cliente, cidorigem, ciddestino, freteemp, fretemot, produto, veiculo } = req.body; // Pegando os dados do corpo da requisição
+        const { usuario, cliente, cidorigem, ciddestino, 
+            tonsaida, tonchegada, motorista, placa, adiantamento, saldo } = req.body; // Pegando os dados do corpo da requisição
 
         const logistica = await prisma.logistica.create({
             data: {
@@ -108,10 +109,12 @@ router.post('/cadastro-fretes', async (req, res) => {
                 cliente,
                 cidorigem,
                 ciddestino,
-                freteemp,
-                fretemot,
-                produto,
-                veiculo,
+                tonsaida,
+                tonchegada,
+                motorista,
+                placa,
+                adiantamento,
+                saldo,
             },
         });
 
