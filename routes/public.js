@@ -128,10 +128,10 @@ router.post('/cadastro-fretes', async (req, res) => {
 
 router.get('/listar-fretes', async (req, res) => {
     try {
-        const fretes = await prisma.logistica.findMany(); // Mudando o nome da variável para um termo mais adequado
+        const fretes = await prisma.logistica.findMany();
 
         if (fretes.length === 0) {
-            return res.status(404).json({ message: "Nenhum frete encontrado!" });
+            return res.status(200).json({ message: "Nenhum frete encontrado!", fretes: [] }); // ✅ Mantém status 200
         }
 
         res.status(200).json({ message: "Fretes listados com sucesso!", fretes });
@@ -140,6 +140,7 @@ router.get('/listar-fretes', async (req, res) => {
         res.status(500).json({ message: "Erro no servidor!", error: error.message });
     }
 });
+
 
 router.delete('/logistica/:id', async (req,res) =>{
     await prisma.logistica.delete({
