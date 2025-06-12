@@ -13,33 +13,72 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum NivelAcesso {
+  ADMIN
+  MOTORISTA
+}
+
+enum StatusFrete {
+  DISPONIVEL
+  RESERVADO
+  EM_TRANSPORTE
+  FINALIZADO
+  CANCELADO
+}
+
 model Usuario {
-  id      String   @id @default(auto()) @map("_id") @db.ObjectId
-  email   String   @unique
-  nome    String
-  senha   String
- 
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  email     String     @unique
+  nome      String
+  senha     String
+  nivel     NivelAcesso
+  cpf       String?    @unique
+  telefone  String?
+  veiculos  Veiculo[]
+  fretesAtivos Frete[] @relation("MotoristaFretesAtivos")
+  historicoFretes Frete[] @relation("MotoristaHistoricoFretes")
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 }
 
-model cliente{
-  id    String   @id @default(auto()) @map("_id") @db.ObjectId
-  email String @unique
-  nome  String    
-  cnpj  String
-  celular String 
-  contato   String
+model Veiculo {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  tipo        String   // Ex: caminhão, van, carreta
+  placa       String   @unique
+  marca       String
+  modelo      String
+  ano         Int
+  capacidade  String   // Ex: peso máximo ou volume
+  motorista   Usuario  @relation(fields: [motoristaId], references: [id])
+  motoristaId String   @db.ObjectId
+  fretes      Frete[]  @relation("VeiculoFretes")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
-model logistica{
-   id    String   @id @default(auto()) @map("_id") @db.ObjectId
-   usuario     String
-   cliente     String
-   cidorigem   String
-   ciddestino   String
-   tonsaida    String
-   tonchegada    String
-   motorista      String
-   placa      String
-   adiantamento String
-   saldo  String
+model Frete {
+  id               String     @id @default(auto()) @map("_id") @db.ObjectId
+  origemCidade     String
+  origemEstado     String
+  origemEndereco   String?
+  destinoCidade    String
+  destinoEstado    String
+  destinoEndereco  String?
+  veiculoRequerido String
+  cargaDescricao   String
+  valor            Float
+  status           StatusFrete @default(DISPONIVEL)
+  motorista        Usuario?    @relation("MotoristaFretesAtivos", fields: [motoristaId], references: [id])
+  motoristaId      String?     @db.ObjectId
+  veiculo          Veiculo?    @relation("VeiculoFretes", fields: [veiculoId], references: [id])
+  veiculoId        String?     @db.ObjectId
+  whatsappContato  String
+  dataColeta       DateTime?
+  dataEntrega      DateTime?
+  clienteNome      String?
+  clienteTelefone  String?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  historicoMotorista Usuario? @relation("MotoristaHistoricoFretes", fields: [historicoMotoristaId], references: [id])
+  historicoMotoristaId String? @db.ObjectId
 }
