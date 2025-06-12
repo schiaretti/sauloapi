@@ -341,4 +341,33 @@ router.get('/admin/usuarios', authenticate, isAdmin, async (req, res) => {
   }
 });
 
+// Adicione esta rota no seu arquivo de rotas (routes.js)
+router.get('/admin/estatisticas', authenticate, isAdmin, async (req, res) => {
+  try {
+    const totalFretes = await prisma.frete.count()
+    const fretesDisponiveis = await prisma.frete.count({
+      where: { status: 'DISPONIVEL' }
+    })
+    const fretesReservados = await prisma.frete.count({
+      where: { status: 'RESERVADO' }
+    })
+    const fretesFinalizados = await prisma.frete.count({
+      where: { status: 'FINALIZADO' }
+    })
+
+    res.json({
+      totalFretes,
+      fretesDisponiveis,
+      fretesReservados,
+      fretesFinalizados,
+      // Adicione mais estatísticas conforme necessário
+      percentualDisponivel: (fretesDisponiveis / totalFretes * 100).toFixed(1),
+      percentualFinalizado: (fretesFinalizados / totalFretes * 100).toFixed(1)
+    })
+  } catch (error) {
+    console.error('Erro ao buscar estatísticas:', error)
+    res.status(500).json({ message: "Erro ao buscar estatísticas" })
+  }
+})
+
 export default router;
