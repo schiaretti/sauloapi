@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'secret_freteapp';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // Middleware de autenticação
 const authenticate = async (req, res, next) => {

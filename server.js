@@ -21,7 +21,7 @@ app.use('/api', routes);
 // Rota health check para o Railway
 app.get('/health', (req, res) => res.status(200).send('OK'));
 
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => { // Ouvir em todos os interfaces
   console.log(`Servidor rodando na porta ${PORT}`);
 });
