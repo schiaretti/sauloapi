@@ -267,7 +267,7 @@ router.post('/fretes', authenticate, isAdmin, async (req, res) => {
         destinoEndereco,
         veiculoRequerido,
         cargaDescricao,
-        valor,
+        valor: parseFloat(valor),
         whatsappContato,
         clienteNome,
         clienteTelefone,
