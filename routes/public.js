@@ -180,8 +180,8 @@ router.post('/veiculos', authenticate, async (req, res) => {
         placa,
         marca,
         modelo,
-        ano,
-        capacidade,
+        ano: parseInt(ano),
+        capacidade: parseInt(capacidade),
         motoristaId: req.user.id
       }
     });

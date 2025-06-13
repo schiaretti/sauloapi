@@ -48,7 +48,7 @@ model Veiculo {
   marca       String
   modelo      String
   ano         Int
-  capacidade  String   // Ex: peso máximo ou volume
+  capacidade  Int   // Ex: peso máximo ou volume
   motorista   Usuario  @relation(fields: [motoristaId], references: [id])
   motoristaId String   @db.ObjectId
   fretes      Frete[]  @relation("VeiculoFretes")
