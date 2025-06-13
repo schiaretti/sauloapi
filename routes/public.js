@@ -38,13 +38,33 @@ const isAdmin = (req, res, next) => {
   res.status(403).json({ message: 'Acesso negado - Requer privilégios de admin' });
 };
 
-// Rotas de Autenticação
 router.post('/cadastro-usuario', async (req, res) => {
   try {
+    // 1. Validação dos campos obrigatórios
     const { email, nome, senha, cpf, telefone, nivel } = req.body;
+    if (!email || !nome || !senha || !cpf || !telefone) {
+      return res.status(400).json({ 
+        message: "Todos os campos são obrigatórios!",
+        camposFaltantes: {
+          email: !email,
+          nome: !nome,
+          senha: !senha,
+          cpf: !cpf,
+          telefone: !telefone
+        }
+      });
+    }
+
+    // 2. Validação do formato do email (exemplo simples)
+    if (!email.includes('@')) {
+      return res.status(400).json({ message: "Formato de email inválido!" });
+    }
+
+    // 3. Criptografia da senha
     const salt = await bcrypt.genSalt(10);
     const hashSenha = await bcrypt.hash(senha, salt);
 
+    // 4. Criação do usuário no banco de dados
     const usuarioDb = await prisma.usuario.create({
       data: {
         email,
@@ -52,19 +72,62 @@ router.post('/cadastro-usuario', async (req, res) => {
         senha: hashSenha,
         cpf,
         telefone,
-        nivel: nivel || 'MOTORISTA', // Default para motorista
+        nivel: nivel || 'MOTORISTA',
       },
     });
 
-    // Gerar token JWT
+    // 5. Geração do token JWT
+    if (!JWT_SECRET) {
+      console.error("Variável JWT_SECRET não está definida!");
+      return res.status(500).json({ message: "Erro de configuração do servidor" });
+    }
+
     const token = jwt.sign({ id: usuarioDb.id }, JWT_SECRET, { expiresIn: '1d' });
 
-    res.status(201).json({ usuario: usuarioDb, token });
+    // 6. Resposta de sucesso
+    res.status(201).json({ 
+      usuario: {
+        id: usuarioDb.id,
+        email: usuarioDb.email,
+        nome: usuarioDb.nome,
+        nivel: usuarioDb.nivel
+      }, 
+      token 
+    });
+
   } catch (error) {
+    console.error("Erro no cadastro:", error);
+
+    // Tratamento específico para erros do Prisma
     if (error.code === 'P2002') {
-      return res.status(400).json({ message: "Email ou CPF já cadastrado!" });
+      const campo = error.meta?.target?.[0] || 'dados';
+      return res.status(409).json({ 
+        message: `Conflito: ${campo} já está em uso!`,
+        detalhes: `O campo ${campo} informado já existe no sistema`
+      });
     }
-    res.status(500).json({ message: "Erro no servidor tente novamente!" });
+
+    // Erros de validação do JWT
+    if (error instanceof jwt.JsonWebTokenError) {
+      return res.status(500).json({ 
+        message: "Erro na geração do token de autenticação",
+        detalhes: error.message
+      });
+    }
+
+    // Erros do bcrypt
+    if (error.message.includes('bcrypt')) {
+      return res.status(500).json({ 
+        message: "Erro ao processar a senha",
+        detalhes: "Falha na criptografia"
+      });
+    }
+
+    // Erro genérico (com detalhes apenas em desenvolvimento)
+    res.status(500).json({ 
+      message: "Erro durante o cadastro",
+      detalhes: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 
