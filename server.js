@@ -3,12 +3,17 @@ import routes from './routes/public.js';
 import cors from 'cors';
 import { PrismaClient } from '@prisma/client';
 
-// Configuração de timeout
-process.env.HTTP_SERVER_TIMEOUT = '600000';
-
 const app = express();
 
-// CORS Config
+// 1. Configurações iniciais
+process.env.HTTP_SERVER_TIMEOUT = '600000';
+const prisma = new PrismaClient({ log: ['query', 'info', 'warn', 'error'] });
+
+// 2. Middlewares ESSENCIAIS (ordem correta)
+app.use(express.json()); // ✅ DEVE VIR ANTES dos logs
+app.use(express.urlencoded({ extended: true }));
+
+// 3. CORS Config
 const corsOptions = {
   origin: ['http://localhost:5173'],
   methods: 'GET,POST,PUT,DELETE',
@@ -16,25 +21,17 @@ const corsOptions = {
   credentials: true,
   optionsSuccessStatus: 204
 };
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
-// Habilitar logs detalhados do Prisma
-const prisma = new PrismaClient({
-  log: ['query', 'info', 'warn', 'error']
-});
-
-// Log de todas as requisições (adicione ANTES das rotas)
+// 4. AGORA SIM o logger (body já estará parseado)
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
   console.log('Headers:', req.headers);
-  console.log('Body:', req.body);
+  console.log('Body:', req.body); // ✅ Agora vai mostrar o body corretamente
   next();
 });
 
-
-
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
-app.use(express.json());
 app.use('/api', routes);
 
 // Health Check
