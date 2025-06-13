@@ -45,8 +45,8 @@ model Veiculo {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   tipo        String   // Ex: caminhão, van, carreta
   placa       String   @unique
-  marca       String
-  modelo      String
+  marca       String?
+  modelo      String?
   ano         Int
   capacidade  Int   // Ex: peso máximo ou volume
   motorista   Usuario  @relation(fields: [motoristaId], references: [id])
@@ -58,15 +58,15 @@ model Veiculo {
 
 model Frete {
   id               String     @id @default(auto()) @map("_id") @db.ObjectId
-  origemCidade     String
-  origemEstado     String
+  origemCidade     String?
+  origemEstado     String?
   origemEndereco   String?
-  destinoCidade    String
-  destinoEstado    String
+  destinoCidade    String?
+  destinoEstado    String?
   destinoEndereco  String?
-  veiculoRequerido String
-  cargaDescricao   String
-  valor            Float
+  veiculoRequerido String?
+  cargaDescricao   String?
+  valor            Float?
   status           StatusFrete @default(DISPONIVEL)
   motorista        Usuario?    @relation("MotoristaFretesAtivos", fields: [motoristaId], references: [id])
   motoristaId      String?     @db.ObjectId
