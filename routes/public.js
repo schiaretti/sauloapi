@@ -3,22 +3,11 @@ import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
-//const prisma = new PrismaClient();
+const prisma = new PrismaClient();
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET;
 
-// Habilitar logs detalhados do Prisma
-const prisma = new PrismaClient({
-  log: ['query', 'info', 'warn', 'error']
-});
 
-// Log de todas as requisições (adicione ANTES das rotas)
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
-  console.log('Headers:', req.headers);
-  console.log('Body:', req.body);
-  next();
-});
 
 // Middleware de autenticação
 const authenticate = async (req, res, next) => {

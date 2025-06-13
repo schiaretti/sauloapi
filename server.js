@@ -1,6 +1,7 @@
 import express from 'express';
 import routes from './routes/public.js';
 import cors from 'cors';
+import { PrismaClient } from '@prisma/client';
 
 // Configuração de timeout
 process.env.HTTP_SERVER_TIMEOUT = '600000';
@@ -15,6 +16,19 @@ const corsOptions = {
   credentials: true,
   optionsSuccessStatus: 204
 };
+
+// Habilitar logs detalhados do Prisma
+const prisma = new PrismaClient({
+  log: ['query', 'info', 'warn', 'error']
+});
+
+// Log de todas as requisições (adicione ANTES das rotas)
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+  console.log('Headers:', req.headers);
+  console.log('Body:', req.body);
+  next();
+});
 
 
 
