@@ -12,7 +12,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 // Middleware de autenticação
 const authenticate = async (req, res, next) => {
   const token = req.header('Authorization')?.replace('Bearer ', '');
-  
+
   if (!token) {
     return res.status(401).json({ message: 'Acesso não autorizado' });
   }
@@ -20,7 +20,7 @@ const authenticate = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     const user = await prisma.usuario.findUnique({ where: { id: decoded.id } });
-    
+
     if (!user) {
       throw new Error();
     }
@@ -45,7 +45,7 @@ router.post('/cadastro-usuario', async (req, res) => {
     // 1. Validação dos campos obrigatórios
     const { email, nome, senha, cpf, telefone, nivel } = req.body;
     if (!email || !nome || !senha || !cpf || !telefone) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: "Todos os campos são obrigatórios!",
         camposFaltantes: {
           email: !email,
@@ -87,14 +87,14 @@ router.post('/cadastro-usuario', async (req, res) => {
     const token = jwt.sign({ id: usuarioDb.id }, JWT_SECRET, { expiresIn: '1d' });
 
     // 6. Resposta de sucesso
-    res.status(201).json({ 
+    res.status(201).json({
       usuario: {
         id: usuarioDb.id,
         email: usuarioDb.email,
         nome: usuarioDb.nome,
         nivel: usuarioDb.nivel
-      }, 
-      token 
+      },
+      token
     });
 
   } catch (error) {
@@ -103,7 +103,7 @@ router.post('/cadastro-usuario', async (req, res) => {
     // Tratamento específico para erros do Prisma
     if (error.code === 'P2002') {
       const campo = error.meta?.target?.[0] || 'dados';
-      return res.status(409).json({ 
+      return res.status(409).json({
         message: `Conflito: ${campo} já está em uso!`,
         detalhes: `O campo ${campo} informado já existe no sistema`
       });
@@ -111,7 +111,7 @@ router.post('/cadastro-usuario', async (req, res) => {
 
     // Erros de validação do JWT
     if (error instanceof jwt.JsonWebTokenError) {
-      return res.status(500).json({ 
+      return res.status(500).json({
         message: "Erro na geração do token de autenticação",
         detalhes: error.message
       });
@@ -119,14 +119,14 @@ router.post('/cadastro-usuario', async (req, res) => {
 
     // Erros do bcrypt
     if (error.message.includes('bcrypt')) {
-      return res.status(500).json({ 
+      return res.status(500).json({
         message: "Erro ao processar a senha",
         detalhes: "Falha na criptografia"
       });
     }
 
     // Erro genérico (com detalhes apenas em desenvolvimento)
-    res.status(500).json({ 
+    res.status(500).json({
       message: "Erro durante o cadastro",
       detalhes: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
@@ -152,15 +152,15 @@ router.post('/login', async (req, res) => {
 
     const token = jwt.sign({ id: usuario.id }, JWT_SECRET, { expiresIn: '7d' });
 
-    res.status(200).json({ 
-      message: "Login realizado com sucesso", 
+    res.status(200).json({
+      message: "Login realizado com sucesso",
       usuario: {
         id: usuario.id,
         nome: usuario.nome,
         email: usuario.email,
         nivel: usuario.nivel
       },
-      token 
+      token
     });
 
   } catch (error) {
@@ -287,7 +287,7 @@ router.post('/fretes', authenticate, isAdmin, async (req, res) => {
 router.post('/fretes/:id/interesse', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     // Verifica se o frete existe e está disponível
     const frete = await prisma.frete.findUnique({
       where: { id }
@@ -299,15 +299,15 @@ router.post('/fretes/:id/interesse', authenticate, async (req, res) => {
 
     // Verifica se o motorista tem veículo compatível
     const veiculos = await prisma.veiculo.findMany({
-      where: { 
+      where: {
         motoristaId: req.user.id,
-        tipo: frete.veiculoRequerido 
+        tipo: frete.veiculoRequerido
       }
     });
 
     if (veiculos.length === 0) {
-      return res.status(400).json({ 
-        message: "Você não possui veículo compatível com este frete" 
+      return res.status(400).json({
+        message: "Você não possui veículo compatível com este frete"
       });
     }
 
@@ -366,7 +366,7 @@ router.put('/fretes/:id/finalizar', authenticate, async (req, res) => {
       },
       include: {
         motorista: true,
-        cliente: true
+        veiculo: true
       }
     });
 
@@ -386,7 +386,7 @@ router.get('/admin/gerenciar-fretes', authenticate, isAdmin, async (req, res) =>
   try {
     console.log('Requisição recebida em /admin/gerenciar-fretes');
     const { status, page = 1, limit = 10 } = req.query;
-    
+
     const where = {};
     if (status) where.status = status;
 
@@ -396,8 +396,8 @@ router.get('/admin/gerenciar-fretes', authenticate, isAdmin, async (req, res) =>
       take: parseInt(limit),
       orderBy: { createdAt: 'desc' },
       include: {
-        motorista: { 
-          select: { 
+        motorista: {
+          select: {
             nome: true,
             email: true,
             telefone: true
@@ -431,7 +431,7 @@ router.get('/admin/gerenciar-fretes', authenticate, isAdmin, async (req, res) =>
       message: error.message,
       stack: error.stack
     });
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
       message: "Erro ao buscar fretes",
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
@@ -481,7 +481,7 @@ router.delete('/fretes/:id', authenticate, async (req, res) => {
 
     // Deleta o frete
     await prisma.frete.delete({
-      where: { id } 
+      where: { id }
     });
 
     res.json({ message: "Frete deletado com sucesso" });
