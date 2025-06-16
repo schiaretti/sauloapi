@@ -226,14 +226,14 @@ router.delete('/veiculos/:id', authenticate, async (req, res) => {
 
     // 2. Verifica se o veículo está vinculado a algum frete ativo
     const fretesVinculados = await prisma.frete.findFirst({
-      where: { 
+      where: {
         veiculoId: id,
         status: { in: ['RESERVADO', 'EM_TRANSPORTE'] }
       }
     });
 
     if (fretesVinculados) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: "Não é possível deletar um veículo vinculado a fretes ativos"
       });
     }
@@ -564,5 +564,25 @@ router.get('/admin/estatisticas', authenticate, isAdmin, async (req, res) => {
     res.status(500).json({ message: "Erro ao buscar estatísticas" })
   }
 })
+
+router.post('/auth/refresh', async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_SECRET);
+
+    const user = await User.findById(decoded.id);
+    if (!user) return res.status(404).json({ message: 'Usuário não encontrado' });
+
+    const newToken = jwt.sign(
+      { id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    res.json({ token: newToken });
+  } catch (error) {
+    res.status(401).json({ message: 'Refresh token inválido' });
+  }
+});
 
 export default router;
