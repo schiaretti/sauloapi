@@ -9,9 +9,6 @@ const app = express();
 process.env.HTTP_SERVER_TIMEOUT = '600000';
 const prisma = new PrismaClient({ log: ['query', 'info', 'warn', 'error'] });
 
-// 2. Middlewares ESSENCIAIS (ordem correta)
-app.use(express.json()); // ✅ DEVE VIR ANTES dos logs
-app.use(express.urlencoded({ extended: true }));
 
 // 3. CORS Config
 const corsOptions = {
@@ -23,6 +20,11 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
+
+// 2. Middlewares ESSENCIAIS (ordem correta)
+app.use(express.json()); // ✅ DEVE VIR ANTES dos logs
+app.use(express.urlencoded({ extended: true }));
+
 
 // 4. AGORA SIM o logger (body já estará parseado)
 app.use((req, res, next) => {

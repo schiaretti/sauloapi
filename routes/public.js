@@ -333,17 +333,28 @@ router.post('/fretes/:id/interesse', authenticate, async (req, res) => {
   }
 });
 
+//rotas administrativas
 router.put('/fretes/:id/finalizar', authenticate, async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Verifica se o frete existe e pertence ao motorista
+    // Verifica se o usuário é admin
+    if (req.user.role !== 'ADMIN') {
+      return res.status(403).json({ message: "Apenas administradores podem finalizar fretes" });
+    }
+
+    // Verifica se o frete existe
     const frete = await prisma.frete.findUnique({
       where: { id }
     });
 
-    if (!frete || frete.motoristaId !== req.user.id) {
-      return res.status(404).json({ message: "Frete não encontrado ou não pertence a você" });
+    if (!frete) {
+      return res.status(404).json({ message: "Frete não encontrado" });
+    }
+
+    // Verifica se o frete está reservado
+    if (frete.status !== 'RESERVADO') {
+      return res.status(400).json({ message: "Apenas fretes reservados podem ser finalizados" });
     }
 
     // Atualiza o status do frete
@@ -352,6 +363,10 @@ router.put('/fretes/:id/finalizar', authenticate, async (req, res) => {
       data: {
         status: 'FINALIZADO',
         dataEntrega: new Date()
+      },
+      include: {
+        motorista: true,
+        cliente: true
       }
     });
 
@@ -369,6 +384,7 @@ router.put('/fretes/:id/finalizar', authenticate, async (req, res) => {
 // Rotas administrativas
 router.get('/admin/gerenciar-fretes', authenticate, isAdmin, async (req, res) => {
   try {
+    console.log('Requisição recebida em /admin/gerenciar-fretes');
     const { status, page = 1, limit = 10 } = req.query;
     
     const where = {};
@@ -376,12 +392,27 @@ router.get('/admin/gerenciar-fretes', authenticate, isAdmin, async (req, res) =>
 
     const fretes = await prisma.frete.findMany({
       where,
-      skip: (page - 1) * limit, 
+      skip: (page - 1) * limit,
       take: parseInt(limit),
       orderBy: { createdAt: 'desc' },
       include: {
-        motorista: { select: { nome: true, email: true } },
-        veiculo: { select: { placa: true, modelo: true } }
+        motorista: { 
+          select: { 
+            nome: true,
+            email: true,
+            telefone: true
+          }
+        },
+        veiculo: {
+          select: {
+            placa: true,
+            modelo: true,
+            tipo: true,
+            capacidade: true,
+            marca: true,
+            ano: true
+          }
+        }
       }
     });
 
@@ -391,13 +422,20 @@ router.get('/admin/gerenciar-fretes', authenticate, isAdmin, async (req, res) =>
       data: fretes,
       pagination: {
         total,
-        page: parseInt(page), 
+        page: parseInt(page),
         totalPages: Math.ceil(total / limit)
       }
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Erro ao buscar fretes" });
+    console.error('Erro detalhado:', {
+      message: error.message,
+      stack: error.stack
+    });
+    res.status(500).json({ 
+      success: false,
+      message: "Erro ao buscar fretes",
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 
@@ -420,6 +458,37 @@ router.get('/admin/usuarios', authenticate, isAdmin, async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Erro ao buscar usuários" });
+  }
+});
+
+router.delete('/fretes/:id', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Verifica se o usuário é admin
+    if (req.user.role !== 'ADMIN') {
+      return res.status(403).json({ message: "Apenas administradores podem deletar fretes" });
+    }
+
+    // Verifica se o frete existe
+    const frete = await prisma.frete.findUnique({
+      where: { id }
+    });
+
+    if (!frete) {
+      return res.status(404).json({ message: "Frete não encontrado" });
+    }
+
+    // Deleta o frete
+    await prisma.frete.delete({
+      where: { id } 
+    });
+
+    res.json({ message: "Frete deletado com sucesso" });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Erro ao deletar frete" });
   }
 });
 
