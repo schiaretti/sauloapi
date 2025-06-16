@@ -339,7 +339,7 @@ router.put('/fretes/:id/finalizar', authenticate, async (req, res) => {
     const { id } = req.params;
 
     // Verifica se o usuário é admin
-    if (req.user.role !== 'ADMIN') {
+    if (req.user.nivel !== 'ADMIN') {
       return res.status(403).json({ message: "Apenas administradores podem finalizar fretes" });
     }
 
@@ -466,7 +466,7 @@ router.delete('/fretes/:id', authenticate, async (req, res) => {
     const { id } = req.params;
 
     // Verifica se o usuário é admin
-    if (req.user.role !== 'ADMIN') {
+    if (req.user.nivel !== 'ADMIN') {
       return res.status(403).json({ message: "Apenas administradores podem deletar fretes" });
     }
 
