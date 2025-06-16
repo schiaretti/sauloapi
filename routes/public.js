@@ -367,9 +367,17 @@ router.put('/fretes/:id/finalizar', authenticate, async (req, res) => {
 });
 
 // Rotas administrativas
-router.get('/admin/fretes', authenticate, isAdmin, async (req, res) => {
+router.get('/admin/gerenciar-fretes', authenticate, isAdmin, async (req, res) => {
   try {
+    const { status, page = 1, limit = 10 } = req.query;
+    
+    const where = {};
+    if (status) where.status = status;
+
     const fretes = await prisma.frete.findMany({
+      where,
+      skip: (page - 1) * limit, 
+      take: parseInt(limit),
       orderBy: { createdAt: 'desc' },
       include: {
         motorista: { select: { nome: true, email: true } },
@@ -377,7 +385,16 @@ router.get('/admin/fretes', authenticate, isAdmin, async (req, res) => {
       }
     });
 
-    res.json(fretes);
+    const total = await prisma.frete.count({ where });
+
+    res.json({
+      data: fretes,
+      pagination: {
+        total,
+        page: parseInt(page), 
+        totalPages: Math.ceil(total / limit)
+      }
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Erro ao buscar fretes" });
