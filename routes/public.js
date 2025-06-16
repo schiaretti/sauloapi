@@ -207,6 +207,50 @@ router.get('/veiculos', authenticate, async (req, res) => {
   }
 });
 
+router.delete('/veiculos/:id', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // 1. Verifica se o veículo existe e pertence ao motorista logado
+    const veiculo = await prisma.veiculo.findUnique({
+      where: { id }
+    });
+
+    if (!veiculo) {
+      return res.status(404).json({ message: "Veículo não encontrado" });
+    }
+
+    if (veiculo.motoristaId !== req.user.id) {
+      return res.status(403).json({ message: "Este veículo não pertence a você" });
+    }
+
+    // 2. Verifica se o veículo está vinculado a algum frete ativo
+    const fretesVinculados = await prisma.frete.findFirst({
+      where: { 
+        veiculoId: id,
+        status: { in: ['RESERVADO', 'EM_TRANSPORTE'] }
+      }
+    });
+
+    if (fretesVinculados) {
+      return res.status(400).json({ 
+        message: "Não é possível deletar um veículo vinculado a fretes ativos"
+      });
+    }
+
+    // 3. Deleta o veículo
+    await prisma.veiculo.delete({
+      where: { id }
+    });
+
+    res.json({ message: "Veículo deletado com sucesso" });
+
+  } catch (error) {
+    console.error('Erro ao deletar veículo:', error);
+    res.status(500).json({ message: "Erro ao deletar veículo" });
+  }
+});
+
 // Rotas de Fretes
 router.get('/fretes/disponiveis', authenticate, async (req, res) => {
   try {
