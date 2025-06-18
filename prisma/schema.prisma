@@ -45,6 +45,7 @@ model Usuario {
   veiculos  Veiculo[]
   fretesAtivos Frete[] @relation("MotoristaFretesAtivos")
   historicoFretes Frete[] @relation("MotoristaHistoricoFretes")
+   alertasSonoros AlertaSonoro[]  // Adicione este campo para completar a relação
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 }
@@ -92,7 +93,7 @@ model Frete {
 }
 
 model AlertaSonoro {
-  id        String   @id @default(uuid())
+  id        String  @id @default(uuid()) @map("_id")
   userId    String
   usuario   Usuario  @relation(fields: [userId], references: [id])
   tipo      String
