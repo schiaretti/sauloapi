@@ -541,7 +541,7 @@ router.delete('/fretes/:id', authenticate, async (req, res) => {
 router.get('/admin/estatisticas', authenticate, isAdmin, async (req, res) => {
   try {
     const totalFretes = await prisma.frete.count()
-    const fretesDisponiveis = await prisma.frete.count({
+    const fretesDisponiveis = await prisma.frete.count({ 
       where: { status: 'DISPONIVEL' }
     })
     const fretesReservados = await prisma.frete.count({
