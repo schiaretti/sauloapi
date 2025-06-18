@@ -26,6 +26,12 @@ enum StatusFrete {
   CANCELADO
 }
 
+enum TipoAlerta {
+  NOTIFICACAO_SIMPLES
+  ALERTA_URGENTE
+  NOVO_FRETE
+}
+
 model Usuario {
   id        String     @id @default(auto()) @map("_id") @db.ObjectId
   email     String     @unique
@@ -34,6 +40,8 @@ model Usuario {
   nivel     NivelAcesso
   cpf       String?    @unique
   telefone  String?
+  deviceToken    String?    // Novo campo para o token de notificação push (FCM/APNs)
+  devicePlatform String?    // Novo campo para a plataforma do dispositivo 
   veiculos  Veiculo[]
   fretesAtivos Frete[] @relation("MotoristaFretesAtivos")
   historicoFretes Frete[] @relation("MotoristaHistoricoFretes")
@@ -81,4 +89,12 @@ model Frete {
   updatedAt        DateTime   @updatedAt
   historicoMotorista Usuario? @relation("MotoristaHistoricoFretes", fields: [historicoMotoristaId], references: [id])
   historicoMotoristaId String? @db.ObjectId
+}
+
+model AlertaSonoro {
+  id        String   @id @default(uuid())
+  userId    String
+  usuario   Usuario  @relation(fields: [userId], references: [id])
+  tipo      String
+  createdAt DateTime @default(now())
 }
